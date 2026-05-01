@@ -8,8 +8,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Fixed base URL for NVIDIA NIM
+# Fixed base URLs
 NVIDIA_NIM_BASE_URL = "https://integrate.api.nvidia.com/v1"
+XIAOMI_OPENAI_BASE_URL = "https://token-plan-sgp.xiaomimimo.com/v1"
+XIAOMI_ANTHROPIC_BASE_URL = "https://token-plan-sgp.xiaomimimo.com/anthropic"
 
 
 class Settings(BaseSettings):
@@ -18,6 +20,11 @@ class Settings(BaseSettings):
     # ==================== NVIDIA NIM Config ====================
     nvidia_nim_api_key: str = ""
 
+    # ==================== Xiaomi Provider Config ====================
+    xiaomi_api_key: str = ""
+    xiaomi_protocol: str = "openai"  # "openai" or "anthropic"
+    xiaomi_base_url: Optional[str] = None
+
     # ==================== Model ====================
     # All Claude model requests are mapped to this single model
     model: str = "moonshotai/kimi-k2-thinking"
@@ -25,6 +32,8 @@ class Settings(BaseSettings):
     # ==================== Rate Limiting ====================
     nvidia_nim_rate_limit: int = 40
     nvidia_nim_rate_window: int = 60
+    xiaomi_rate_limit: int = 40
+    xiaomi_rate_window: int = 60
 
     # ==================== Fast Prefix Detection ====================
     fast_prefix_detection: bool = True
@@ -64,6 +73,34 @@ class Settings(BaseSettings):
     nvidia_nim_reasoning_effort: str = "high"
     nvidia_nim_include_reasoning: bool = True
 
+    # ==================== Xiaomi Core Parameters ====================
+    xiaomi_temperature: float = 1.0
+    xiaomi_top_p: float = 1.0
+    xiaomi_top_k: int = -1
+    xiaomi_max_tokens: int = 81920
+    xiaomi_presence_penalty: float = 0.0
+    xiaomi_frequency_penalty: float = 0.0
+
+    # ==================== Xiaomi Advanced Parameters ====================
+    xiaomi_min_p: float = 0.0
+    xiaomi_repetition_penalty: float = 1.0
+    xiaomi_seed: Optional[int] = None
+    xiaomi_stop: Optional[str] = None
+
+    # ==================== Xiaomi Flag Parameters ====================
+    xiaomi_parallel_tool_calls: bool = True
+    xiaomi_return_tokens_as_token_ids: bool = False
+    xiaomi_include_stop_str_in_output: bool = False
+    xiaomi_ignore_eos: bool = False
+
+    xiaomi_min_tokens: int = 0
+    xiaomi_chat_template: str = ""
+    xiaomi_request_id: str = ""
+
+    # ==================== Xiaomi Thinking/Reasoning Parameters ====================
+    xiaomi_reasoning_effort: str = "high"
+    xiaomi_include_reasoning: bool = True
+
     # ==================== Bot Wrapper Config ====================
     telegram_bot_token: Optional[str] = None
     telegram_api_id: Optional[str] = None  # Deprecated
@@ -78,7 +115,7 @@ class Settings(BaseSettings):
     port: int = 8082
 
     # Handle empty strings for optional int fields
-    @field_validator("nvidia_nim_seed", mode="before")
+    @field_validator("nvidia_nim_seed", "xiaomi_seed", mode="before")
     @classmethod
     def parse_optional_int(cls, v):
         if v == "" or v is None:
@@ -88,10 +125,12 @@ class Settings(BaseSettings):
     # Handle empty strings for optional string fields
     @field_validator(
         "nvidia_nim_stop",
+        "xiaomi_stop",
         "telegram_bot_token",
         "telegram_api_id",
         "telegram_api_hash",
         "allowed_telegram_user_id",
+        "xiaomi_base_url",
         mode="before",
     )
     @classmethod
