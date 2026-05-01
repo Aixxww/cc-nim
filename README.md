@@ -1,29 +1,49 @@
 # claude-code-nim
 
-Use **Claude Code CLI for free** with NVIDIA NIM's free unlimited 40 reqs/min API. This lightweight proxy converts Claude Code's Anthropic API requests to NVIDIA NIM format. **Includes Telegram bot integration** for remote control from your phone!
+Use **Claude Code CLI for free** with NVIDIA NIM, Xiaomi, or other model providers via the terminal CLI or telegram. This lightweight proxy converts Claude Code's Anthropic API requests to your chosen provider format. **Includes Telegram bot integration!**
+
+## Supported Providers
+
+- **NVIDIA NIM** - Free unlimited 40 reqs/min API with access to thousands of models
+- **Xiaomi MIMO** - Alternative provider with OpenAI and Anthropic compatible protocols
+- Extensible architecture - add your own providers easily!
 
 ## Quick Start
 
-### 1. Get Your Free NVIDIA API Key
+### 1. Choose Your Provider
 
+#### NVIDIA NIM (Free)
 1. Get a new API key from [build.nvidia.com/settings/api-keys](https://build.nvidia.com/settings/api-keys)
+2. Install [claude-code](https://github.com/anthropics/claude-code)
+3. Install [uv](https://github.com/astral-sh/uv)
+
+#### Xiaomi MIMO
+1. Get your API key from Xiaomi
 2. Install [claude-code](https://github.com/anthropics/claude-code)
 3. Install [uv](https://github.com/astral-sh/uv)
 
 ### 2. Clone & Configure
 
 ```bash
-git clone https://github.com/Alishahryar1/cc-nim.git
+git clone https://github.com/Aixxww/cc-nim.git
 cd cc-nim
 
 cp .env.example .env
 ```
 
-Edit `.env`:
+Edit `.env` - choose your provider:
 
+**For NVIDIA NIM:**
 ```dotenv
 NVIDIA_NIM_API_KEY=nvapi-your-key-here
 MODEL=moonshotai/kimi-k2-thinking
+```
+
+**For Xiaomi:**
+```dotenv
+XIAOMI_API_KEY=your-xiaomi-key
+XIAOMI_PROTOCOL=openai  # or "anthropic"
+MODEL=your-xiaomi-model
 ```
 
 ---
@@ -42,7 +62,7 @@ uv run uvicorn server:app --host 0.0.0.0 --port 8082
 ANTHROPIC_AUTH_TOKEN=ccnim ANTHROPIC_BASE_URL=http://localhost:8082 claude
 ```
 
-That's it! Claude Code now uses NVIDIA NIM for free.
+That's it! Claude Code now uses your chosen provider for free.
 
 ---
 
@@ -85,27 +105,29 @@ uv run uvicorn server:app --host 0.0.0.0 --port 8082
 
 - **Send a message** to yourself on Telegram with a task
 - Claude will respond with:
-  - 💭 **Thinking tokens** (reasoning steps)
-  - 🔧 **Tool calls** as they execute
-  - ✅ **Final result** when complete
+   - 💭 **Thinking tokens** (reasoning steps)
+   - 🔧 **Tool calls** as they execute
+   - ✅ **Final result** when complete
 - Send `/stop` to cancel a running task
 
 ## Available Models
 
-See [`nvidia_nim_models.json`](nvidia_nim_models.json) for the full list of supported models.
+See [`nvidia_nim_models.json`](nvidia_nim_models.json) for the full list of NVIDIA NIM supported models.
 
-Popular choices:
+Popular NVIDIA NIM choices:
 
 - `moonshotai/kimi-k2.5`
 - `z-ai/glm4.7`
 - `minimaxai/minimax-m2.1`
 - `mistralai/devstral-2-123b-instruct-2512`
 
-Browse all models at [build.nvidia.com](https://build.nvidia.com/explore/discover)
+For Xiaomi models, refer to your provider documentation.
 
-### Updating the Model List
+Browse NVIDIA NIM models at [build.nvidia.com](https://build.nvidia.com/explore/discover)
 
-To update `nvidia_nim_models.json` with the latest models from NVIDIA NIM, run the following command:
+### Updating the NVIDIA Model List
+
+To update `nvidia_nim_models.json` with the latest models from NVIDIA NIM, run:
 
 ```bash
 curl "https://integrate.api.nvidia.com/v1/models" > nvidia_nim_models.json
@@ -116,8 +138,11 @@ curl "https://integrate.api.nvidia.com/v1/models" > nvidia_nim_models.json
 | Variable                   | Description                   | Default                               |
 | -------------------------- | ----------------------------- | ------------------------------------- |
 | `NVIDIA_NIM_API_KEY`       | Your NVIDIA API key           | required                              |
+| `XIAOMI_API_KEY`           | Your Xiaomi API key           | optional                              |
+| `XIAOMI_PROTOCOL`          | Xiaomi protocol type          | `openai` or `anthropic`               |
 | `MODEL`                    | Model to use for all requests | `moonshotai/kimi-k2-thinking`         |
-| `NVIDIA_NIM_BASE_URL`      | NIM endpoint                  | `https://integrate.api.nvidia.com/v1` |
+| `NVIDIA_NIM_BASE_URL`      | NVIDIA NIM endpoint           | `https://integrate.api.nvidia.com/v1` |
+| `XIAOMI_BASE_URL`          | Xiaomi endpoint (auto-set)    | based on protocol                     |
 | `CLAUDE_WORKSPACE`         | Directory for agent workspace | `./agent_workspace`                   |
 | `ALLOWED_DIR`              | Allowed directories for agent | `""`                                  |
 | `MAX_CLI_SESSIONS`         | Max concurrent CLI sessions   | `10`                                  |
@@ -127,8 +152,12 @@ curl "https://integrate.api.nvidia.com/v1/models" > nvidia_nim_models.json
 | `MESSAGING_RATE_WINDOW`    | Messaging window (seconds)    | `1`                                   |
 | `NVIDIA_NIM_RATE_LIMIT`    | API requests per window       | `40`                                  |
 | `NVIDIA_NIM_RATE_WINDOW`   | Rate limit window (seconds)   | `60`                                  |
-| `NVIDIA_NIM_TEMPERATURE`   | Model temperature             | `1.0`                                 |
+| `XIAOMI_RATE_LIMIT`        | Xiaomi requests per window    | `40`                                  |
+| `XIAOMI_RATE_WINDOW`       | Xiaomi rate window (seconds)  | `60`                                  |
+| `NVIDIA_NIM_TEMPERATURE`   | NVIDIA model temperature      | `1.0`                                 |
+| `XIAOMI_TEMPERATURE`       | Xiaomi model temperature      | `1.0`                                 |
 | `NVIDIA_NIM_MAX_TOKENS`    | Max tokens for generation     | `81920`                               |
+| `XIAOMI_MAX_TOKENS`        | Max tokens for generation     | `81920`                               |
 
 See [`.env.example`](.env.example) for all supported parameters.
 
@@ -193,3 +222,7 @@ class MyPlatform(MessagingPlatform):
         # Handler expects an IncomingMessage object
         pass
 ```
+
+## License
+
+MIT
